@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRF Scheduling Simulator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        
+        .process-input {
+            background-color: #ecf0f1;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        label {
+            min-width: 120px;
+            font-weight: bold;
+        }
+        
+        input {
+            padding: 8px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            width: 80px;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-danger {
+            background-color: #e74c3c;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-success {
+            background-color: #27ae60;
+        }
+        
+        .btn-success:hover {
+            background-color: #229954;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            border: 1px solid #bdc3c7;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        th {
+            background-color: #34495e;
+            color: white;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .result {
+            background-color: #d5edda;
+            border: 1px solid #c3e6cb;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .gantt-chart {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .gantt-bar {
+            display: inline-block;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            margin: 2px;
+            color: white;
+            font-weight: bold;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<!-- Container Utama -->
+<div class="container">
+    <h1>🔄 Simulasi SRF (Shortest Remaining First) Scheduling</h1>
+
+    <!-- Biodata Kelompok -->
+<div style="margin-bottom: 30px; background-color: #ecf0f1; padding: 20px; border-radius: 10px;">
+    <h3 style="text-align: center; margin-bottom: 15px;">👥 Anggota Kelompok</h3>
+    <table style="margin: 0 auto; border-collapse: collapse;">
+        <tr>
+            <th style="padding: 8px 15px; border-bottom: 1px solid #ccc;">Nama</th>
+            <th style="padding: 8px 15px; border-bottom: 1px solid #ccc;">NIM</th>
+            <th style="padding: 8px 15px; border-bottom: 1px solid #ccc;">Kelas</th>
+        </tr>
+        <tr>
+            <td style="padding: 8px 15px;">Nurlaila</td>
+            <td style="padding: 8px 15px;">11240020</td>
+            <td style="padding: 8px 15px;">TI-A</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 15px;">Maima Adila</td>
+            <td style="padding: 8px 15px;">11240029</td>
+            <td style="padding: 8px 15px;">TI-A</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 15px;">Rendi Febrian</td>
+            <td style="padding: 8px 15px;">11240045</td>
+            <td style="padding: 8px 15px;">TI-A</td>
+        </tr>
+    </table>
+</div>
+   <!-- Input Process -->
+<div class="process-input">
+    <h3>📝 Input Data Process</h3>
+    <div class="input-group">
+        <input type="hidden" id="processName">
+        
+        <label>Arrival Time:</label>
+        <input type="number" id="arrivalTime" placeholder="0" value="0">
+        
+        <label>Burst Time:</label>
+        <input type="number" id="burstTime" placeholder="5" value="5">
+        
+        <button onclick="addProcess()">➕ Tambah Process</button>
+    </div>
+</div>
+
+   
+
+        <!-- Process Table -->
+        <div>
+            <h3>📋 Daftar Process</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Process</th>
+                        <th>Arrival Time</th>
+                        <th>Burst Time</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="processTable">
+                    <!-- Data akan ditambahkan di sini -->
+                </tbody>
+            </table>
+            
+            <button onclick="simulateSRF()" class="btn-success">🚀 Jalankan SRF</button>
+            <button onclick="clearAll()" class="btn-danger">🗑 Clear All</button>
+            <button onclick="loadExample()">📊 Load Contoh Data</button>
+        </div>
+
+        <!-- Gantt Chart -->
+        <div id="ganttSection" style="display: none;">
+            <h3>📊 Gantt Chart</h3>
+            <div class="gantt-chart">
+                <div id="ganttChart"></div>
+                <div id="timeScale"></div>
+            </div>
+        </div>
+
+        <!-- Hasil Perhitungan -->
+        <div id="resultSection" style="display: none;">
+            <h3>📈 Hasil Perhitungan SRF</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Process</th>
+                        <th>Arrival Time</th>
+                        <th>Burst Time</th>
+                        <th>Completion Time</th>
+                        <th>Turnaround Time</th>
+                        <th>Waiting Time</th>
+                    </tr>
+                </thead>
+                <tbody id="resultTable">
+                </tbody>
+            </table>
+            
+            <div class="result">
+                <h4>📊 Ringkasan:</h4>
+                <p><strong>Average Turnaround Time:</strong> <span id="avgTurnaround">0</span> ms</p>
+                <p><strong>Average Waiting Time:</strong> <span id="avgWaiting">0</span> ms</p>
+            </div>
+        </div>
+
+    
+
+    <script>
+        let processes = [];
+        let processCounter = 1;
+
+        // Tambah process baru
+        function addProcess() {
+    const name = `P${processCounter}`;
+    document.getElementById('processName').value = name;
+
+    const arrivalTime = parseInt(document.getElementById('arrivalTime').value) || 0;
+    const burstTime = parseInt(document.getElementById('burstTime').value) || 1;
+
+    if (burstTime <= 0) {
+        alert('Burst time harus lebih dari 0!');
+        return;
+    }
+
+    const process = {
+        id: processes.length,
+        name: name,
+        arrivalTime: arrivalTime,
+        burstTime: burstTime,
+        remainingTime: burstTime
+    };
+
+    processes.push(process);
+    processCounter++;
+
+    updateProcessTable();
+    clearInputs();
+}
+
+
+        // Update tabel process
+        function updateProcessTable() {
+            const tbody = document.getElementById('processTable');
+            tbody.innerHTML = '';
+
+            processes.forEach((process, index) => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${process.name}</td>
+                    <td>${process.arrivalTime}</td>
+                    <td>${process.burstTime}</td>
+                    <td><button onclick="removeProcess(${index})" class="btn-danger">Hapus</button></td>
+                `;
+            });
+        }
+
+        // Hapus process
+        function removeProcess(index) {
+            processes.splice(index, 1);
+            updateProcessTable();
+        }
+
+        // Clear semua data
+        function clearAll() {
+            processes = [];
+            processCounter = 1;
+            updateProcessTable();
+            document.getElementById('ganttSection').style.display = 'none';
+            document.getElementById('resultSection').style.display = 'none';
+        }
+
+        // Clear input form
+        function clearInputs() {
+    document.getElementById('processName').value = `P${processCounter}`;
+    document.getElementById('arrivalTime').value = '';
+    document.getElementById('burstTime').value = '';
+}
+
+        // Load contoh data
+        function loadExample() {
+            processes = [
+                {id: 0, name: 'P1', arrivalTime: 0, burstTime: 8, remainingTime: 8},
+                {id: 1, name: 'P2', arrivalTime: 1, burstTime: 4, remainingTime: 4},
+                {id: 2, name: 'P3', arrivalTime: 2, burstTime: 9, remainingTime: 9},
+                {id: 3, name: 'P4', arrivalTime: 3, burstTime: 5, remainingTime: 5}
+            ];
+            processCounter = 5;
+            updateProcessTable();
+        }
+
+        // Simulasi SRF
+        function simulateSRF() {
+            if (processes.length === 0) {
+                alert('Tambahkan minimal 1 process!');
+                return;
+            }
+
+            // Reset remaining time
+            processes.forEach(p => p.remainingTime = p.burstTime);
+
+            let currentTime = 0;
+            let completed = 0;
+            let ganttChart = [];
+            let results = [];
+
+            // Copy processes untuk simulasi
+            let processList = processes.map(p => ({...p}));
+
+            while (completed < processList.length) {
+                // Cari process yang sudah arrive dan belum selesai
+                let availableProcesses = processList.filter(p => 
+                    p.arrivalTime <= currentTime && p.remainingTime > 0
+                );
+
+                if (availableProcesses.length === 0) {
+                    currentTime++;
+                    continue;
+                }
+
+                // Pilih process dengan remaining time terpendek
+                let selectedProcess = availableProcesses.reduce((min, p) => 
+                    p.remainingTime < min.remainingTime ? p : min
+                );
+
+                // Eksekusi 1 unit waktu
+                selectedProcess.remainingTime--;
+                
+                // Tambah ke gantt chart
+                ganttChart.push({
+                    process: selectedProcess.name,
+                    time: currentTime
+                });
+
+                currentTime++;
+
+                // Jika process selesai
+                if (selectedProcess.remainingTime === 0) {
+                    completed++;
+                    
+                    const completionTime = currentTime;
+                    const turnaroundTime = completionTime - selectedProcess.arrivalTime;
+                    const waitingTime = turnaroundTime - selectedProcess.burstTime;
+
+                    results.push({
+                        name: selectedProcess.name,
+                        arrivalTime: selectedProcess.arrivalTime,
+                        burstTime: selectedProcess.burstTime,
+                        completionTime: completionTime,
+                        turnaroundTime: turnaroundTime,
+                        waitingTime: waitingTime
+                    });
+                }
+            }
+
+            displayResults(results, ganttChart);
+        }
+
+        // Tampilkan hasil
+        function displayResults(results, ganttChart) {
+            // Tampilkan tabel hasil
+            const resultTBody = document.getElementById('resultTable');
+            resultTBody.innerHTML = '';
+
+            results.forEach(result => {
+                const row = resultTBody.insertRow();
+                row.innerHTML = `
+                    <td>${result.name}</td>
+                    <td>${result.arrivalTime}</td>
+                    <td>${result.burstTime}</td>
+                    <td>${result.completionTime}</td>
+                    <td>${result.turnaroundTime}</td>
+                    <td>${result.waitingTime}</td>
+                `;
+            });
+
+            // Hitung rata-rata
+            const avgTurnaround = (results.reduce((sum, r) => sum + r.turnaroundTime, 0) / results.length).toFixed(2);
+            const avgWaiting = (results.reduce((sum, r) => sum + r.waitingTime, 0) / results.length).toFixed(2);
+
+            document.getElementById('avgTurnaround').textContent = avgTurnaround;
+            document.getElementById('avgWaiting').textContent = avgWaiting;
+
+            // Tampilkan Gantt Chart
+            displayGanttChart(ganttChart);
+
+            // Tampilkan section hasil
+            document.getElementById('ganttSection').style.display = 'block';
+            document.getElementById('resultSection').style.display = 'block';
+        }
+
+        // Tampilkan Gantt Chart
+        function displayGanttChart(ganttChart) {
+            const ganttDiv = document.getElementById('ganttChart');
+            const timeScaleDiv = document.getElementById('timeScale');
+            
+            ganttDiv.innerHTML = '';
+            timeScaleDiv.innerHTML = '';
+
+            // Buat color map untuk setiap process
+            const colors = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c'];
+            const processColors = {};
+            let colorIndex = 0;
+
+            // Group consecutive same processes
+            let groupedChart = [];
+            let currentGroup = null;
+
+            ganttChart.forEach((item, index) => {
+                if (!processColors[item.process]) {
+                    processColors[item.process] = colors[colorIndex % colors.length];
+                    colorIndex++;
+                }
+
+                if (currentGroup && currentGroup.process === item.process) {
+                    currentGroup.endTime = item.time + 1;
+                } else {
+                    if (currentGroup) groupedChart.push(currentGroup);
+                    currentGroup = {
+                        process: item.process,
+                        startTime: item.time,
+                        endTime: item.time + 1,
+                        color: processColors[item.process]
+                    };
+                }
+            });
+
+            if (currentGroup) groupedChart.push(currentGroup);
+
+            // Render gantt chart
+            groupedChart.forEach(group => {
+                const width = (group.endTime - group.startTime) * 40;
+                const ganttBar = document.createElement('div');
+                ganttBar.className = 'gantt-bar';
+                ganttBar.style.width = width + 'px';
+                ganttBar.style.backgroundColor = group.color;
+                ganttBar.textContent = group.process;
+                ganttDiv.appendChild(ganttBar);
+            });
+
+            // Render time scale
+            const maxTime = Math.max(...ganttChart.map(g => g.time)) + 1;
+            for (let i = 0; i <= maxTime; i++) {
+                const timeDiv = document.createElement('div');
+                timeDiv.style.display = 'inline-block';
+                timeDiv.style.width = '40px';
+                timeDiv.style.textAlign = 'center';
+                timeDiv.style.borderLeft = '1px solid #bdc3c7';
+                timeDiv.textContent = i;
+                timeScaleDiv.appendChild(timeDiv);
+            }
+        }
+
+        // Load contoh data saat halaman dimuat
+        window.onload = function() {
+            loadExample();
+        }
+    </script>
+</body>
+</html>

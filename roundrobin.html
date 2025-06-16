@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Round Robin Sederhana</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: white;
+        }
+
+        .container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: black;
+            text-align: center;
+        }
+
+        .input-box {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        input {
+            padding: 5px;
+            margin: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background-color: white;
+            color: black;
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #f0f0f0;
+        }
+
+        .proses-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 5px 0;
+        }
+
+        .hasil-box {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .timeline {
+            display: flex;
+            overflow-x: auto;
+            padding: 5px 0;
+            border: 1px solid #ddd;
+        }
+
+        .time-slot {
+            min-width: 40px;
+            height: 40px;
+            margin-right: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: black;
+            font-weight: bold;
+            border: 1px solid #ccc;
+            background-color: white;
+            flex-shrink: 0;
+        }
+
+        .time-labels {
+            display: flex;
+            overflow-x: auto;
+            margin-top: 5px;
+        }
+
+        .time-labels div {
+            min-width: 40px;
+            text-align: center;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Round Robin Scheduling</h1>
+        <p style="text-align: center;">Algoritma Penjadwalan Proses</p>
+
+        <div class="input-box">
+            <h3>Identitas Kelompok</h3>
+            <table border="1" cellpadding="5" cellspacing="0" style="width:100%; text-align:left;">
+                <tr>
+                    <th>Nama</th>
+                    <th>NIM</th>
+                    <th>Kelas</th>
+                </tr>
+                <tr><td>Nurlaila</td><td>11240020</td><td>TI-A</td></tr>
+                <tr><td>Maima Adila</td><td>11240029</td><td>TI-A</td></tr>
+                <tr><td>Rendi Febrian</td><td>11240045</td><td>TI-A</td></tr>
+            </table>
+        </div>
+
+        <div class="input-box">
+            <h3>Input Data</h3>
+            <label>Time Quantum: </label>
+            <input type="number" id="quantum" value="2" min="1" max="5"><br><br>
+
+            <label>Nama Proses: </label>
+            <input type="text" id="nama" placeholder="P1" maxlength="3">
+
+            <label>Waktu Proses: </label>
+            <input type="number" id="waktu" placeholder="5" min="1" max="10">
+
+            <button onclick="tambah()">Tambah</button><br><br>
+
+            <button onclick="contoh()">Isi Contoh</button>
+            <button onclick="hapus()">Hapus Semua</button>
+            <button onclick="mulai()">Mulai Simulasi</button>
+        </div>
+
+        <div>
+            <h3>Daftar Proses</h3>
+            <div id="daftar">Belum ada proses</div>
+        </div>
+
+        <div>
+            <h3>Hasil Simulasi</h3>
+            <div id="simulasi">Tekan tombol "Mulai Simulasi"</div>
+        </div>
+
+        <div id="hasil" style="display: none;">
+            <h3>Hasil Perhitungan</h3>
+            <div id="perhitungan"></div>
+        </div>
+    </div>
+
+    <script>
+        let prosesList = [];
+
+        function tambah() {
+            let nama = document.getElementById('nama').value.trim();
+            let waktu = parseInt(document.getElementById('waktu').value);
+            if (nama === '' || isNaN(waktu) || waktu <= 0) {
+                alert('Isi nama dan waktu proses dengan benar!');
+                return;
+            }
+
+            for (let p of prosesList) {
+                if (p.nama === nama) {
+                    alert('Nama proses sudah ada!');
+                    return;
+                }
+            }
+
+            prosesList.push({ nama, waktuAsli: waktu, waktuSisa: waktu });
+            document.getElementById('nama').value = '';
+            document.getElementById('waktu').value = '';
+            tampilkanDaftar();
+        }
+
+        function tampilkanDaftar() {
+            let html = prosesList.length === 0 ? 'Belum ada proses' :
+                prosesList.map(p => `<div class="proses-box"><strong>${p.nama}</strong> - Waktu: ${p.waktuAsli} detik</div>`).join('');
+            document.getElementById('daftar').innerHTML = html;
+        }
+
+        function contoh() {
+            prosesList = [
+                { nama: 'P1', waktuAsli: 5, waktuSisa: 5 },
+                { nama: 'P2', waktuAsli: 3, waktuSisa: 3 },
+                { nama: 'P3', waktuAsli: 4, waktuSisa: 4 }
+            ];
+            tampilkanDaftar();
+        }
+
+        function hapus() {
+            prosesList = [];
+            tampilkanDaftar();
+            document.getElementById('simulasi').innerHTML = 'Tekan tombol "Mulai Simulasi"';
+            document.getElementById('hasil').style.display = 'none';
+        }
+
+        function mulai() {
+            if (prosesList.length === 0) {
+                alert('Tambahkan proses terlebih dahulu!');
+                return;
+            }
+
+            let quantum = parseInt(document.getElementById('quantum').value);
+            for (let p of prosesList) p.waktuSisa = p.waktuAsli;
+
+            let waktuTotal = 0;
+            let timeline = [];
+            let antrian = [...prosesList];
+            let hasilAkhir = [];
+
+            while (antrian.length > 0) {
+                let proses = antrian.shift();
+                let waktuEksekusi = Math.min(quantum, proses.waktuSisa);
+
+                for (let i = 0; i < waktuEksekusi; i++) {
+                    timeline.push({ nama: proses.nama, waktu: waktuTotal + i + 1 });
+                }
+
+                waktuTotal += waktuEksekusi;
+                proses.waktuSisa -= waktuEksekusi;
+
+                if (proses.waktuSisa > 0) {
+                    antrian.push(proses);
+                } else {
+                    proses.waktuSelesai = waktuTotal;
+                    proses.waktuTunggu = waktuTotal - proses.waktuAsli;
+                    hasilAkhir.push(proses);
+                }
+            }
+
+            tampilkanTimeline(timeline);
+            tampilkanHasil(hasilAkhir);
+        }
+
+        function tampilkanTimeline(timeline) {
+            let html = '<h4>Timeline Eksekusi:</h4><div class="timeline">';
+            for (let slot of timeline) {
+                html += `<div class="time-slot" title="Waktu ${slot.waktu}">${slot.nama}</div>`;
+            }
+            html += '</div><div class="time-labels">';
+            for (let i = 0; i <= timeline.length; i++) {
+                html += `<div>${i}</div>`;
+            }
+            html += '</div>';
+            document.getElementById('simulasi').innerHTML = html;
+        }
+
+        function tampilkanHasil(hasil) {
+            let totalTunggu = 0;
+            let html = '<div class="hasil-box"><h4>Detail Setiap Proses:</h4>';
+            for (let p of hasil) {
+                html += `<p><strong>${p.nama}</strong> - Waktu Asli: ${p.waktuAsli}, Waktu Selesai: ${p.waktuSelesai}, Waktu Tunggu: ${p.waktuTunggu}</p>`;
+                totalTunggu += p.waktuTunggu;
+            }
+            let rataTunggu = (totalTunggu / hasil.length).toFixed(1);
+            html += `<hr><p><strong>Rata-rata Waktu Tunggu: ${rataTunggu} detik</strong></p></div>`;
+            document.getElementById('perhitungan').innerHTML = html;
+            document.getElementById('hasil').style.display = 'block';
+        }
+
+        // Auto isi contoh saat pertama kali
+        contoh();
+    </script>
+</body>
+</html>
